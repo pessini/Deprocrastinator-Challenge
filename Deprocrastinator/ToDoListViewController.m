@@ -17,6 +17,7 @@
 
 @property UISwipeGestureRecognizer *swipeGesture;
 
+@property (strong, nonatomic) NSIndexPath *indexPathToBeDeleted;
 @end
 
 @implementation ToDoListViewController
@@ -120,12 +121,16 @@
 - (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
     if (editingStyle == UITableViewCellEditingStyleDelete) {
 
+        self.indexPathToBeDeleted = indexPath;
+
         UIAlertView *alertWarningDelete = [[UIAlertView alloc] initWithTitle:@"Warning!"
                                                                       message:@"Are you sure?"
                                                                      delegate:self
                                                             cancelButtonTitle:@"Cancel"
                                                             otherButtonTitles:@"Delete", nil];
         [alertWarningDelete show];
+
+
     }
 }
 
@@ -133,17 +138,13 @@
 
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
 {
-    // if it is the second button - otherButtonTitles:
+    // This method is invoked in response to the user's action.
     if(buttonIndex == 1)
     {
-        LPTodoItem *item = [self.toDoItems objectAtIndex:alertView.tag];
-        [self.toDoItems removeObjectAtIndex:alertView.tag]; // remove the item from the array
+        LPTodoItem *item = [self.toDoItems objectAtIndex:self.indexPathToBeDeleted.row];
+        [self.toDoItems removeObjectAtIndex:self.indexPathToBeDeleted.row]; // remove the item from the array
         [item deleteItem]; // then remove it from LPToDoItem class
-        [self.toDoListTableView reloadData];
-    }
-    else
-    {
-        [self.toDoListTableView reloadData];
+        [self.toDoListTableView deleteRowsAtIndexPaths:@[self.indexPathToBeDeleted] withRowAnimation:UITableViewRowAnimationFade];
     }
 }
 
