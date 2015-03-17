@@ -50,7 +50,13 @@
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                     </view>
-                    <navigationItem key="navigationItem" title="Deprocrastinator" id="Yjz-KM-Qcv"/>
+                    <navigationItem key="navigationItem" title="Deprocrastinator" id="Yjz-KM-Qcv">
+                        <barButtonItem key="leftBarButtonItem" title="Edit" id="q9k-Tt-W0W">
+                            <connections>
+                                <action selector="onEditButtonPressed:" destination="vXZ-lx-hvc" id="ZnX-ni-zee"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
                     <connections>
                         <outlet property="addNewToDoTextField" destination="u0F-u1-2IJ" id="xXH-Pi-VNt"/>
                         <outlet property="toDoListTableView" destination="rgS-QH-BHl" id="MNZ-YV-dRq"/>

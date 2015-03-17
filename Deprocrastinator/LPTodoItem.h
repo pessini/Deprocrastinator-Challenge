@@ -12,6 +12,8 @@
 
 @property NSString *itemName;
 @property BOOL completed;
-@property int priority;
+@property NSNumber *priority;
+
+-(void)deleteItem;
 
 @end

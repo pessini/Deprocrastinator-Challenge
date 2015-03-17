@@ -23,8 +23,6 @@
     self.toDoItems = [NSMutableArray new];
     [self loadInitialItems];
 
-    // add an edit button to the left
-    self.navigationItem.leftBarButtonItem = self.editButtonItem;
 }
 
 -(void)loadInitialItems
@@ -83,6 +81,27 @@
     [tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationNone];
 }
 
+// Override to support conditional editing of the table view.
+// This only needs to be implemented if you are going to be returning NO
+// for some items. By default, all items are editable.
+- (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath {
+    // Return YES if you want the specified item to be editable.
+    return YES;
+}
+
+// Override to support editing the table view.
+- (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
+    if (editingStyle == UITableViewCellEditingStyleDelete) {
+
+        LPTodoItem *item = [self.toDoItems objectAtIndex:indexPath.row];
+
+        [self.toDoItems removeObjectAtIndex:indexPath.row]; // remove the item form the array
+        [item deleteItem]; // then remove it from LPToDoItem class
+
+        [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
+    }
+}
+
 #pragma mark - IBAction
 
 -(IBAction)onAddButtonPressed:(UIButton *)sender
@@ -111,6 +130,17 @@
         [alertTextFieldEmpty show];
     }
 }
+
+-(IBAction)onEditButtonPressed:(UIBarButtonItem *)sender
+{
+
+    sender.title = @"Done";
+
+}
+
+#pragma mark - Helper Method
+
+
 
 
 @end
