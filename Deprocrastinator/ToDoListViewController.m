@@ -12,6 +12,7 @@
 @interface ToDoListViewController () <UITableViewDataSource, UITableViewDelegate>
 @property (weak, nonatomic) IBOutlet UITableView *toDoListTableView;
 @property IBOutlet UITextField *addNewToDoTextField;
+
 @property NSMutableArray *toDoItems;
 @end
 
@@ -22,6 +23,10 @@
 
     self.toDoItems = [NSMutableArray new];
     [self loadInitialItems];
+
+    UISwipeGestureRecognizer *swipeGesture = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(didSwipe:)];
+    [swipeGesture setDirection:UISwipeGestureRecognizerDirectionLeft];
+    [self.toDoListTableView addGestureRecognizer:swipeGesture];
 
 }
 
@@ -86,7 +91,7 @@
 // for some items. By default, all items are editable.
 - (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath {
     // Return YES if you want the specified item to be editable.
-    return YES;
+    return NO;
 }
 
 // Override to support editing the table view.
@@ -95,10 +100,44 @@
 
         LPTodoItem *item = [self.toDoItems objectAtIndex:indexPath.row];
 
-        [self.toDoItems removeObjectAtIndex:indexPath.row]; // remove the item form the array
+        [self.toDoItems removeObjectAtIndex:indexPath.row]; // remove the item from the array
         [item deleteItem]; // then remove it from LPToDoItem class
 
         [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
+    }
+}
+
+#pragma mark - UIGestureRecognizer
+
+-(void)didSwipe:(UIGestureRecognizer *)gestureRecognizer
+{
+    if (gestureRecognizer.state == UIGestureRecognizerStateEnded) {
+        CGPoint swipeLocation = [gestureRecognizer locationInView:self.toDoListTableView];
+        NSIndexPath *swipedIndexPath = [self.toDoListTableView indexPathForRowAtPoint:swipeLocation];
+        UITableViewCell *swipedCell = [self.toDoListTableView cellForRowAtIndexPath:swipedIndexPath];
+
+        LPTodoItem *item = [self.toDoItems objectAtIndex:swipedIndexPath.row];
+
+        if (!item.priority) {
+            item.priority = @1;
+            swipedCell.textLabel.textColor = [UIColor greenColor];
+        }
+        else if ([item.priority intValue] == 1)
+        {
+            item.priority = @2;
+            swipedCell.textLabel.textColor = [UIColor yellowColor];
+        }
+        else if ([item.priority intValue] == 2)
+        {
+            item.priority = @3;
+            swipedCell.textLabel.textColor = [UIColor redColor];
+        }
+        else
+        {
+            item.priority = nil;
+            swipedCell.textLabel.textColor = [UIColor blackColor];
+        }
+
     }
 }
 
@@ -137,10 +176,6 @@
     sender.title = @"Done";
 
 }
-
-#pragma mark - Helper Method
-
-
 
 
 @end
