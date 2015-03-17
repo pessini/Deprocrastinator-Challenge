@@ -14,6 +14,10 @@
 @property IBOutlet UITextField *addNewToDoTextField;
 
 @property NSMutableArray *toDoItems;
+
+@property UISwipeGestureRecognizer *swipeGesture;
+
+@property (strong, nonatomic) NSIndexPath *indexPathToBeDeleted;
 @end
 
 @implementation ToDoListViewController
@@ -24,9 +28,9 @@
     self.toDoItems = [NSMutableArray new];
     [self loadInitialItems];
 
-    UISwipeGestureRecognizer *swipeGesture = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(didSwipe:)];
-    [swipeGesture setDirection:UISwipeGestureRecognizerDirectionLeft];
-    [self.toDoListTableView addGestureRecognizer:swipeGesture];
+    self.swipeGesture = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(didSwipe:)];
+    [self.swipeGesture setDirection:UISwipeGestureRecognizerDirectionLeft];
+    [self.toDoListTableView addGestureRecognizer:self.swipeGesture];
 
 }
 
@@ -91,19 +95,58 @@
 // for some items. By default, all items are editable.
 - (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath {
     // Return YES if you want the specified item to be editable.
-    return NO;
+    if ([self.toDoListTableView isEditing])
+    {
+        return YES;
+    }
+    else
+    {
+        return NO;
+    }
+}
+
+- (BOOL)tableView:(UITableView *)tableView canMoveRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    return YES;
+}
+
+- (void)tableView:(UITableView *)tableView moveRowAtIndexPath:(NSIndexPath *)sourceIndexPath toIndexPath:(NSIndexPath *)destinationIndexPath
+{
+    NSString *stringToMove = self.toDoItems[sourceIndexPath.row];
+    [self.toDoItems removeObjectAtIndex:sourceIndexPath.row];
+    [self.toDoItems insertObject:stringToMove atIndex:destinationIndexPath.row];
 }
 
 // Override to support editing the table view.
 - (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
     if (editingStyle == UITableViewCellEditingStyleDelete) {
 
-        LPTodoItem *item = [self.toDoItems objectAtIndex:indexPath.row];
+        self.indexPathToBeDeleted = indexPath;
 
-        [self.toDoItems removeObjectAtIndex:indexPath.row]; // remove the item from the array
+        UIAlertView *alertWarningDelete = [[UIAlertView alloc] initWithTitle:@"Warning!"
+                                                                      message:@"Are you sure?"
+                                                                     delegate:self
+                                                            cancelButtonTitle:@"Cancel"
+                                                            otherButtonTitles:@"Delete", nil];
+        [alertWarningDelete show];
+
+
+    }
+}
+
+#pragma mark - UIAlertView
+
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
+{
+    // This method is invoked in response to the user's action.
+
+    NSString *title = [alertView buttonTitleAtIndex:buttonIndex];
+    if([title isEqualToString:@"Delete"])
+    {
+        LPTodoItem *item = [self.toDoItems objectAtIndex:self.indexPathToBeDeleted.row];
+        [self.toDoItems removeObjectAtIndex:self.indexPathToBeDeleted.row]; // remove the item from the array
         [item deleteItem]; // then remove it from LPToDoItem class
-
-        [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
+        [self.toDoListTableView deleteRowsAtIndexPaths:@[self.indexPathToBeDeleted] withRowAnimation:UITableViewRowAnimationFade];
     }
 }
 
@@ -172,9 +215,19 @@
 
 -(IBAction)onEditButtonPressed:(UIBarButtonItem *)sender
 {
-
-    sender.title = @"Done";
-
+    if ([self.toDoListTableView isEditing]) {
+        // If the tableView is already in edit mode, turn it off.
+        [self.toDoListTableView setEditing:NO animated:YES];
+        sender.title = @"Edit";
+        self.swipeGesture.enabled = true;
+    }
+    else
+    {
+        sender.title = @"Done";
+        // Turn on edit mode
+        [self.toDoListTableView setEditing:YES animated:YES];
+        self.swipeGesture.enabled = false;
+    }
 }
 
 
